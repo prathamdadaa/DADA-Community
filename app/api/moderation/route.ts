@@ -3,17 +3,22 @@ import { createClient } from "@/lib/supabase/server";
 import { moderationSchema } from "@/lib/security";
 import { rateLimit } from "@/lib/rate-limit";
 
+// 👇 Next.js ko static build ignore karne ke liye batane ke liye
+export const dynamic = 'force-static';
+
 async function moderator(){
  const supabase=await createClient(); const {data:{user}}=await supabase.auth.getUser(); if(!user)return null;
  const {data:p}=await supabase.from("profiles").select("role").eq("id",user.id).single();
  return p && ["moderator","admin"].includes(p.role) ? {supabase,user} : null;
 }
+
 export async function GET(){
  const ctx=await moderator(); if(!ctx)return NextResponse.json({error:"Forbidden"},{status:403});
  const {data,error}=await ctx.supabase.from("content").select("id,title,body,type,created_at,profiles(display_name,vi_id)").eq("status","pending").order("created_at",{ascending:true}).limit(100);
  if(error)return NextResponse.json({error:"Could not load queue."},{status:500});
  return NextResponse.json({items:data??[]});
 }
+
 export async function PATCH(req:Request){
  const ctx=await moderator(); if(!ctx)return NextResponse.json({error:"Forbidden"},{status:403});
  if(!(await rateLimit(`mod:${ctx.user.id}`,60,60)))return NextResponse.json({error:"Rate limited."},{status:429});
