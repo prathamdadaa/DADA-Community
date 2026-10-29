@@ -1,9 +1,9 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  output: "export", // Static HTML Export enable karta hai GitHub Pages ke liye
+  // output: "export", <-- Ise yahan se hata dena hai
   images: {
-    unoptimized: true, // GitHub Pages par Next.js image optimization bypass karta hai
+    unoptimized: true, // Ise aap rakh sakte hain, isse koi dikkat nahi hogi
   },
 };
 
